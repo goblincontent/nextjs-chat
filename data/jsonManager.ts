@@ -7,7 +7,7 @@ const axios = require('axios').default;
 const UserAgent = require('user-agents');
 const cheerio = require('cheerio');
 
-const filePath = 'online_marketplace_antitrust.json'
+const filePath = 'data/online_marketplace_antitrust.json'
 
 async function readJsonFile(filePath: string): Promise<any> {
     try {
@@ -64,8 +64,7 @@ async function main() {
         const scraper = new Scraper();
         const supabaseWrapper = new SupabaseWrapper();
 
-        // for (let i = 0; i < jsonData.results.length; i++) {
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < jsonData.results.length; i++) {
             const caseID = jsonData.results[i].id;
             const caseName = jsonData.results[i].name_abbreviation;
             const decisionDate = jsonData.results[i].decision_date;
@@ -82,7 +81,9 @@ async function main() {
             await sleep(3000);
             let response = await scraper.run(frontendUrl)
             response = stripWhitespace(response);
-            console.log(response);
+            console.log("====Case Text====")
+            console.log(response.slice(0, 20));
+            console.log("=================")
             if (response != "") {
                 // Add to supabase db
                 supabaseWrapper.insertData({
@@ -131,6 +132,6 @@ function sleep(ms: number) {
 }
 
 function stripWhitespace(input: string): string {
-    // Use a regular expression to replace leading and trailing whitespace
-    return input.replace(/^\s+|\s+$/g, '');
+    // Use a regular expression to replace all whitespace (including newline characters and tabs)
+    return input.replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
   }

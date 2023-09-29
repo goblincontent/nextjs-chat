@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-require('dotenv').config("../.env");
+require('dotenv').config();
 
 
 export class SupabaseWrapper {
@@ -19,11 +19,14 @@ export class SupabaseWrapper {
     async insertData(dataToInsert: object)
     {
         try {
-            const { data, error } = await this.supabase.from(this.tableName).upsert(dataToInsert);
+            const { error } = await this.supabase.from(this.tableName).upsert(
+                dataToInsert, {
+                onConflict: ['case_id']
+            });
             if (error) {
                 console.error('Error inserting data: ', error);
             } else {
-                console.log('Data successfully inserted', data);
+                console.log('Data successfully inserted');
             }
         } catch (e) {
             console.error('Error:', e);
