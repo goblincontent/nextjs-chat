@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as cookieManager from './cookie_manager';
 import { setLocalCookie, getLocalCookie } from './cookie_storage.js';
-import { insertData } from './insert_documents_supabase.js';
+import { SupabaseWrapper } from './supabaseWrapper.js';
 
 const axios = require('axios').default;
 const UserAgent = require('user-agents');
@@ -62,21 +62,19 @@ async function main() {
     try {
         const jsonData = await readJsonFile(filePath);
         const scraper = new Scraper();
+        const supabaseWrapper = new SupabaseWrapper();
 
-        for (let i = 0; i < jsonData.results.length; i++) {
+        // for (let i = 0; i < jsonData.results.length; i++) {
+        for (let i = 0; i < 3; i++) {
             const caseID = jsonData.results[i].id;
             const caseName = jsonData.results[i].name_abbreviation;
             const decisionDate = jsonData.results[i].decision_date;
-            const docketNumber = jsonData.results[i].docket_number;
-            const volumeNumber = jsonData.results[i].volume.volume_number;
             const reporterFullName = jsonData.results[i].reporter.full_name;
             const courtName = jsonData.results[i].court.name;
             const frontendUrl = jsonData.results[i].frontend_url;
 
             console.log("Case Name:", caseName);
             console.log("Decision Date:", decisionDate);
-            console.log("Docket Number:", docketNumber);
-            console.log("Volume Number:", volumeNumber);
             console.log("Reporter Full Name:", reporterFullName);
             console.log("Court Name:", courtName);
             console.log("URL:", frontendUrl);
@@ -87,6 +85,15 @@ async function main() {
             console.log(response);
             if (response != "") {
                 // Add to supabase db
+                supabaseWrapper.insertData({
+                    "case_id": jsonData.results[i].id,
+                    "case_name": jsonData.results[i].name_abbreviation,
+                    "decision_date": jsonData.results[i].decision_date,
+                    "reporter_name": jsonData.results[i].reporter.full_name,
+                    "court_name": jsonData.results[i].court.name,
+                    "url": jsonData.results[i].frontend_url,
+                    "case_text": response
+                })
             }
         }     
 
