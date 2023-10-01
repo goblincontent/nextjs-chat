@@ -43,21 +43,21 @@ export async function Header() {
   
           <Link href="/">
             <div className="flex items-center">
-              <IconOpenAI className="w-6 h-6 mr-2" />
+              <IconOpenAI className="w-6 h-6 ml-2 mr-2" />
               <span>Case Law Chatbot Demo</span>
             </div>
           </Link>
         </div>
   
         <div className="flex items-center">
-          <Link href="/about">
-            <span className="mr-4">About</span>
-          </Link>
+          <Button variant="secondary" className="mr-4">
+            <Link href="/about">About</Link>
+          </Button>
   
           {session?.user ? (
             <UserMenu user={session.user} />
           ) : (
-            <Button variant="link" asChild className="-ml-2">
+            <Button variant="ghost" asChild className="ml-2">
               <Link href="/sign-in?callbackUrl=/">Login</Link>
             </Button>
           )}
