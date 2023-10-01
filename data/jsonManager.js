@@ -44,26 +44,6 @@ var axios = require('axios').default;
 var UserAgent = require('user-agents');
 var cheerio = require('cheerio');
 var filePath = 'data/online_marketplace_antitrust.json';
-function readJsonFile(filePath) {
-    return __awaiter(this, void 0, void 0, function () {
-        var data, jsonData, error_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, fs.promises.readFile(filePath, 'utf8')];
-                case 1:
-                    data = _a.sent();
-                    jsonData = JSON.parse(data);
-                    return [2 /*return*/, jsonData];
-                case 2:
-                    error_1 = _a.sent();
-                    throw new Error("Error reading json: ".concat(error_1));
-                case 3: return [2 /*return*/];
-            }
-        });
-    });
-}
 var Scraper = /** @class */ (function () {
     function Scraper() {
         this.axios = axios.create({
@@ -98,7 +78,7 @@ var Scraper = /** @class */ (function () {
                         return [2 /*return*/, null];
                     case 3:
                         e_1 = _a.sent();
-                        console.log(e_1);
+                        // console.log(e);
                         console.log('IScraper: could not fetch the page content from %s', url);
                         return [2 /*return*/, null];
                     case 4: return [2 /*return*/];
@@ -110,7 +90,7 @@ var Scraper = /** @class */ (function () {
 }());
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var jsonData, scraper, supabaseWrapper, i, caseID, caseName, decisionDate, reporterFullName, courtName, frontendUrl, response, error_2;
+        var jsonData, scraper, supabaseWrapper, i, caseName, frontendUrl, response, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -120,42 +100,38 @@ function main() {
                     jsonData = _a.sent();
                     scraper = new Scraper();
                     supabaseWrapper = new supabaseWrapper_js_1.SupabaseWrapper();
-                    i = 0;
+                    i = 22;
                     _a.label = 2;
                 case 2:
                     if (!(i < jsonData.results.length)) return [3 /*break*/, 6];
-                    caseID = jsonData.results[i].id;
                     caseName = jsonData.results[i].name_abbreviation;
-                    decisionDate = jsonData.results[i].decision_date;
-                    reporterFullName = jsonData.results[i].reporter.full_name;
-                    courtName = jsonData.results[i].court.name;
                     frontendUrl = jsonData.results[i].frontend_url;
-                    console.log("Case Name:", caseName);
-                    console.log("Decision Date:", decisionDate);
-                    console.log("Reporter Full Name:", reporterFullName);
-                    console.log("Court Name:", courtName);
-                    console.log("URL:", frontendUrl);
-                    return [4 /*yield*/, sleep(3000)];
+                    return [4 /*yield*/, sleep(60000)];
                 case 3:
                     _a.sent();
                     return [4 /*yield*/, scraper.run(frontendUrl)];
                 case 4:
                     response = _a.sent();
-                    response = stripWhitespace(response);
-                    console.log("====Case Text====");
-                    console.log(response.slice(0, 20));
-                    console.log("=================");
-                    if (response != "") {
-                        // Add to supabase db
-                        supabaseWrapper.insertData({
-                            "case_id": jsonData.results[i].id,
-                            "case_name": jsonData.results[i].name_abbreviation,
-                            "decision_date": jsonData.results[i].decision_date,
-                            "reporter_name": jsonData.results[i].reporter.full_name,
-                            "court_name": jsonData.results[i].court.name,
-                            "url": jsonData.results[i].frontend_url,
-                            "case_text": response
-                        });
+                    if (response != null) {
+                        response = stripWhitespace(response);
+                        if (response != "") {
+                            console.log("Case Name:", caseName);
+                            console.log("URL:", frontendUrl);
+                            console.log("====Case Text====");
+                            console.log(response.slice(0, 100));
+                            console.log("=================");
+                            // Add to supabase db
+                            supabaseWrapper.insertData({
+                                "case_id": jsonData.results[i].id,
+                                "case_name": jsonData.results[i].name_abbreviation,
+                                "decision_date": jsonData.results[i].decision_date,
+                                "reporter_name": jsonData.results[i].reporter.full_name,
+                                "court_name": jsonData.results[i].court.name,
+                                "url": jsonData.results[i].frontend_url,
+                                "case_text": response,
+                                "index": i
+                            });
+                        }
                     }
                     _a.label = 5;
                 case 5:
@@ -163,8 +139,8 @@ function main() {
                     return [3 /*break*/, 2];
                 case 6: return [3 /*break*/, 8];
                 case 7:
-                    error_2 = _a.sent();
-                    console.log(error_2);
+                    error_1 = _a.sent();
+                    console.log(error_1);
                     return [3 /*break*/, 8];
                 case 8: return [2 /*return*/];
             }
@@ -195,11 +171,26 @@ function cookieSetup() {
     });
 }
 ;
-cookieSetup().then(function () {
-    sleep(5000).then(function () {
-        main();
+function readJsonFile(filePath) {
+    return __awaiter(this, void 0, void 0, function () {
+        var data, jsonData, error_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, fs.promises.readFile(filePath, 'utf8')];
+                case 1:
+                    data = _a.sent();
+                    jsonData = JSON.parse(data);
+                    return [2 /*return*/, jsonData];
+                case 2:
+                    error_2 = _a.sent();
+                    throw new Error("Error reading json: ".concat(error_2));
+                case 3: return [2 /*return*/];
+            }
+        });
     });
-});
+}
 function sleep(ms) {
     return new Promise(function (resolve) { return setTimeout(resolve, ms); });
 }
@@ -207,3 +198,8 @@ function stripWhitespace(input) {
     // Use a regular expression to replace all whitespace (including newline characters and tabs)
     return input.replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
 }
+cookieSetup().then(function () {
+    sleep(60000).then(function () {
+        main();
+    });
+});

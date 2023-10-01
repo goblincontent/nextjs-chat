@@ -9,16 +9,6 @@ const cheerio = require('cheerio');
 
 const filePath = 'data/online_marketplace_antitrust.json'
 
-async function readJsonFile(filePath: string): Promise<any> {
-    try {
-        const data = await fs.promises.readFile(filePath, 'utf8');
-        const jsonData = JSON.parse(data);
-        return jsonData;
-    } catch (error) {
-        throw new Error(`Error reading json: ${error}`);
-    }
-}
-
 class Scraper
 {
     axios: any;
@@ -51,7 +41,7 @@ class Scraper
             console.log('IScraper: could not fetch or handle the page content from %s', url);
             return null;
         } catch (e) {
-            console.log(e);
+            // console.log(e);
             console.log('IScraper: could not fetch the page content from %s', url);
           return null;
         }
@@ -62,39 +52,34 @@ async function main() {
     try {
         const jsonData = await readJsonFile(filePath);
         const scraper = new Scraper();
-        const supabaseWrapper = new SupabaseWrapper();
+        const supabaseWrapper = new SupabaseWrapper("cases");
 
-        for (let i = 0; i < jsonData.results.length; i++) {
-            const caseID = jsonData.results[i].id;
+        for (let i = 22; i < jsonData.results.length; i++) {
             const caseName = jsonData.results[i].name_abbreviation;
-            const decisionDate = jsonData.results[i].decision_date;
-            const reporterFullName = jsonData.results[i].reporter.full_name;
-            const courtName = jsonData.results[i].court.name;
             const frontendUrl = jsonData.results[i].frontend_url;
 
-            console.log("Case Name:", caseName);
-            console.log("Decision Date:", decisionDate);
-            console.log("Reporter Full Name:", reporterFullName);
-            console.log("Court Name:", courtName);
-            console.log("URL:", frontendUrl);
-
-            await sleep(3000);
+            await sleep(60000);
             let response = await scraper.run(frontendUrl)
-            response = stripWhitespace(response);
-            console.log("====Case Text====")
-            console.log(response.slice(0, 20));
-            console.log("=================")
-            if (response != "") {
-                // Add to supabase db
-                supabaseWrapper.insertData({
-                    "case_id": jsonData.results[i].id,
-                    "case_name": jsonData.results[i].name_abbreviation,
-                    "decision_date": jsonData.results[i].decision_date,
-                    "reporter_name": jsonData.results[i].reporter.full_name,
-                    "court_name": jsonData.results[i].court.name,
-                    "url": jsonData.results[i].frontend_url,
-                    "case_text": response
-                })
+            if (response != null) {
+                response = stripWhitespace(response);
+                if (response != "") {
+                    console.log("Case Name:", caseName);
+                    console.log("URL:", frontendUrl);
+                    console.log("====Case Text====");
+                    console.log(response.slice(0, 100));
+                    console.log("=================");
+                    // Add to supabase db
+                    supabaseWrapper.insertData({
+                        "case_id": jsonData.results[i].id,
+                        "case_name": jsonData.results[i].name_abbreviation,
+                        "decision_date": jsonData.results[i].decision_date,
+                        "reporter_name": jsonData.results[i].reporter.full_name,
+                        "court_name": jsonData.results[i].court.name,
+                        "url": jsonData.results[i].frontend_url,
+                        "case_text": response,
+                        "index": i
+                    })
+                }
             }
         }     
 
@@ -105,7 +90,6 @@ async function main() {
 
 async function cookieSetup() {
     // CookieManager call point
-    // login/password values are stored in the .env file
     const cookie = await cookieManager.fetchCookie(
         "https://cite.case.law/f-supp-2d/650/89/"
     );
@@ -121,11 +105,15 @@ async function cookieSetup() {
     }
 };
 
-cookieSetup().then(() => {
-    sleep(5000).then(() => {
-        main();
-    });
-})
+async function readJsonFile(filePath: string): Promise<any> {
+    try {
+        const data = await fs.promises.readFile(filePath, 'utf8');
+        const jsonData = JSON.parse(data);
+        return jsonData;
+    } catch (error) {
+        throw new Error(`Error reading json: ${error}`);
+    }
+}
 
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -134,4 +122,10 @@ function sleep(ms: number) {
 function stripWhitespace(input: string): string {
     // Use a regular expression to replace all whitespace (including newline characters and tabs)
     return input.replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
-  }
+}
+
+cookieSetup().then(() => {
+    sleep(60000).then(() => {
+        main();
+    });
+})

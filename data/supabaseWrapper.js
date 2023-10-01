@@ -40,13 +40,14 @@ exports.SupabaseWrapper = void 0;
 var supabase_js_1 = require("@supabase/supabase-js");
 require('dotenv').config();
 var SupabaseWrapper = /** @class */ (function () {
-    function SupabaseWrapper() {
+    function SupabaseWrapper(tableName) {
         this.supabaseURL = process.env.SUPABASE_URL;
-        this.supabaseAPIKey = process.env.SUPABASE_API_KEY;
+        this.supabaseAPIKey = process.env.SUPABASE_SERVICE_ROLE;
         this.supabase = (0, supabase_js_1.createClient)(this.supabaseURL, this.supabaseAPIKey);
-        this.tableName = "cases";
+        this.tableName = tableName;
     }
-    SupabaseWrapper.prototype.insertData = function (dataToInsert) {
+    SupabaseWrapper.prototype.insertData = function (dataToInsert, onConflict) {
+        if (onConflict === void 0) { onConflict = ['case_id']; }
         return __awaiter(this, void 0, void 0, function () {
             var error, e_1;
             return __generator(this, function (_a) {
@@ -54,7 +55,7 @@ var SupabaseWrapper = /** @class */ (function () {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
                         return [4 /*yield*/, this.supabase.from(this.tableName).upsert(dataToInsert, {
-                                onConflict: ['case_id']
+                                onConflict: onConflict
                             })];
                     case 1:
                         error = (_a.sent()).error;
@@ -67,7 +68,35 @@ var SupabaseWrapper = /** @class */ (function () {
                         return [3 /*break*/, 3];
                     case 2:
                         e_1 = _a.sent();
-                        console.error('Error:', e_1);
+                        console.error('Exception in insertData(): ', e_1);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    SupabaseWrapper.prototype.getData = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, data, error, e_2;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _b.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.supabase.from(this.tableName).select('case_id, case_text')];
+                    case 1:
+                        _a = _b.sent(), data = _a.data, error = _a.error;
+                        if (error) {
+                            console.error("Error Loading data from db. ", error);
+                            return [2 /*return*/, null];
+                        }
+                        else {
+                            console.log("Data successfully loaded");
+                            return [2 /*return*/, data];
+                        }
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_2 = _b.sent();
+                        console.error('Exception in getData(): ', e_2);
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
                 }
