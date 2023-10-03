@@ -7,16 +7,16 @@ import { IconArrowRight } from '@/components/ui/icons'
 
 const exampleMessages = [
   {
-    heading: 'Explain technical concepts',
-    message: `What is a "serverless function"?`
+    heading: 'Look for previous case law to do with amazon and online monopolies',
+    message: `Look for case law concerning the dominance of Amazon in the online retail space and monopoly of online marketplaces\n`
   },
   {
-    heading: 'Summarize an article',
-    message: 'Summarize the following article for a 2nd grader: \n'
+    heading: `I'm looking for privacy concerns regarding apps and advertisements`,
+    message: `Find case law for for any companies that have violated privacy concerns regarding apps and advertisements.\n`
   },
   {
-    heading: 'Draft an email',
-    message: `Draft an email to my boss about the following: \n`
+    heading: `I'm interested in electronic payment fraud`,
+    message: `Look for case law to do with electronic payment fraud.\n`
   }
 ]
 
