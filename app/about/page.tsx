@@ -1,15 +1,35 @@
 'use client'
 
 import * as Accordion from "@radix-ui/react-accordion";
-import { Popover } from "@radix-ui/react-popover";
+import * as Popover  from "@radix-ui/react-popover";
 import React from "react";
 import { IconChevronDown } from "@/components/ui/icons"
 import { clsx } from "clsx";
 
 interface AccordionItem {
   header: string,
-  content: string;
+  content: React.ReactNode;
 }
+
+// const MyComponent = () : React.ReactNode  => {
+//   return (
+//     <div className="">
+//       Testing 1 2 3 
+//       <br/>
+//       <Popover.Root>
+//         <Popover.Trigger>4</Popover.Trigger>
+//         <Popover.Portal>
+//           <Popover.Content>
+//             Some more info…
+//             <Popover.Arrow />
+//           </Popover.Content>
+//         </Popover.Portal>
+//       </Popover.Root>
+//       Other text
+
+//     </div>
+//   )
+// }
 
 const items: AccordionItem[] = [
   {
@@ -22,7 +42,7 @@ const items: AccordionItem[] = [
   },
   {
     header: "Dataset and Limitations",
-    content: "Content2"
+    content: ""
   },
   {
     header: "How does it work?",
@@ -39,9 +59,9 @@ interface AccordionProps { }
 const MyAboutPageAccordion = (props: AccordionProps) => {
   return (
     <Accordion.Root
-      type="single"
+      type="multiple"
       className={clsx("space-y-4 w-full")}
-      defaultValue="item-1">
+      defaultValue={["item-1"]}>
       {items.map(({ header, content }, i) => (
         <Accordion.Item
           key={`header-${i}`}
@@ -84,8 +104,10 @@ export default function About() {
 
   return (
     <div className="w-full mx-auto max-w-2xl px-4">
-      <div className="rounded-lg border bg-background p-8">
-        <MyAboutPageAccordion/>
+      <div className="flex h-screen">
+        <div className="rounded-lg border bg-background p-8 m-auto ">
+          <MyAboutPageAccordion/>
+        </div>
       </div>
     </div>
   )

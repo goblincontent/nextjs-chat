@@ -7,12 +7,12 @@ import { IconArrowRight } from '@/components/ui/icons'
 
 const exampleMessages = [
   {
-    heading: 'Look for previous case law to do with amazon and online monopolies',
-    message: `Look for case law concerning the dominance of Amazon in the online retail space and monopoly of online marketplaces\n`
+    heading: 'Find relevant case law to do with the recent Amazon antitrust lawsuit',
+    message: `amazon antitrust and monopoly of online marketplaces\n`
   },
   {
     heading: `I'm looking for privacy concerns regarding apps and advertisements`,
-    message: `Find case law for for any companies that have violated privacy concerns regarding apps and advertisements.\n`
+    message: `violation of privacy concerns, apps and advertisements\n`
   },
   {
     heading: `I'm interested in electronic payment fraud`,
