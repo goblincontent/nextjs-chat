@@ -16,21 +16,23 @@ import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
 import { LLM } from 'langchain/dist/llms/base';
 import { group } from 'console';
-import { StreamingTextResponse } from 'ai';
+import { LangChainStream, StreamingTextResponse } from 'ai';
+import { BytesOutputParser } from 'langchain/schema/output_parser';
 
 export const runtime = 'edge'
 
 const templates = {
     qaTemplate: `Answer the question based on the context below. 
-        - There will be a CASE_CONTEXT AND a QUESTION.
+        - There will be a CASE_CONTEXT, CASE_SUMMARY AND a QUESTION.
         - The CASE_CONTEXT is a part of a case law document.
+        - The CASE_SUMMARY is a summary of the case law document
         - The QUESTION is a the user's question.
         - The final answer must always be styled using markdown.
         - Your main goal is to give the user relevant information for each of the three cases from the CASE_CONTEXT
-        - Your secondary goal is to provide the user with an answer that is relevant to the question.
         - Use bullet points, lists, paragraphs and text styling to present the answer in markdown.
-        - The answer should only be based on the CASE_CONTEXT, common sense and sound reasoning.
-        - When answering, first state the CASE ID
+        - The answer should only be based on common sense and sound reasoning.
+        - When answering, state the case ID if you can, and write a short summary of the case.
+        - be descriptive and think about the user's question and make connections to the context
 
         CASE_SUMMARY: {case_summaries}
 
@@ -40,9 +42,8 @@ const templates = {
 
         Final Answer: `,
     
-    summaryTemplate: `Create a Summary of this case law document in reference to the users' question.
+    summaryTemplate: `Create a Summary of this case law document.
     Do not use information outside of the text aside from common sense and sound reasoning.
-    We want around 1000 words.
     CASE_LAW_DOCUMENT: {case_law_document}
     `
 }
@@ -181,26 +182,35 @@ const handleRequest = async (
             ]
         })
         
-    
-        const chain = new LLMChain({
-            prompt: promptTemplate,
-            llm: new ChatOpenAI({
-                streaming: true,
-                verbose: false,
-                modelName: "gpt-3.5-turbo-16k"
-            })
+        const outputParser = new BytesOutputParser();
+        const model = new ChatOpenAI({
+            temperature: 0.5,
+            streaming: true,
+            verbose: false,
+            modelName: "gpt-3.5-turbo-16k"
         });
+        // const chain = new LLMChain({
+        //     prompt: promptTemplate,
+        //     llm: new ChatOpenAI({
+        //         streaming: true,
+        //         verbose: false,
+        //         modelName: "gpt-3.5-turbo-16k"
+        //     })
+        // });
+
+        const chain = promptTemplate.pipe(model).pipe(outputParser);
 
         console.log("=====relevantDocuments=====");
         console.log(relevantDocuments);
         console.log("=====fullSummary=====");
         console.log(fullSummary);
 
-        const finalResult = await chain.invoke({ case_summaries: fullSummary, case_relevant_documents: relevantDocuments, question: prompt });
-        return finalResult.text;
-
+        const stream = await chain.stream({ case_summaries: fullSummary, case_relevant_documents: relevantDocuments, question: prompt });
+        return new StreamingTextResponse(stream);
     } else {
-        return "No matches found."
+        console.log("No matches found");
+        return null;
+        // return "No matches found."
     }
 }
 
@@ -228,15 +238,14 @@ export async function POST(req: Request) {
 
     // console.log("=====messages====");
     // console.log(messages);
-    const result = handleRequest({
+    const stream = await handleRequest({
         prompt: messages.pop().content,
         userId: "user",
         supabaseClient: client
     });
 
-    return new Response(await result, {
-        statusText: "thinking..."
-    })
+    return stream;
+
 
     // return new StreamingTextResponse(await result);
     // return new Response(result, {
