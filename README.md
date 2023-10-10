@@ -1,5 +1,5 @@
 # Case Law Research Chatbot Demo
-(App Link)[https://chatbox-leap.vercel.app/]
+[App Link](https://chatbox-leap.vercel.app/)
 
 ## About
 
