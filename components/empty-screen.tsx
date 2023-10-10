@@ -25,7 +25,7 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
     <div className="mx-auto max-w-2xl px-4">
       <div className="rounded-lg border bg-background p-8">
         <h1 className="mb-2 text-lg font-semibold">
-          Welcome to my custom AI Chatbot designed for lawyers to do case research!
+          Demo AI Chatbot for lawyers to do case research! with Retriever Augmented Generation. Please allow 10 seconds for responses.
         </h1>
         <p className="mb-2 leading-normal text-muted-foreground">
           Please read the about page <Link href="/about" target="_blank" rel="nofollow">here</Link> for more information on limitations and dataset.
