@@ -53,6 +53,10 @@ export async function Header() {
           <Button variant="secondary" className="mr-4">
             <Link href="/about">About</Link>
           </Button>
+
+          <Button variant="secondary" className="mr-4">
+            <Link href="https://github.com/goblincontent/nextjs-chat">Github</Link>
+          </Button>
   
           {session?.user ? (
             <UserMenu user={session.user} />
