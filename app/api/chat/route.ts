@@ -155,23 +155,36 @@ const handleRequest = async (
 
         groupedData.sort((a, b) => b.average - a.average);
 
-        let fullSummary = "";
-        let relevantDocuments = "";
-        let i;
-        for (i = 0; i < 3; i++) {
-            let group = groupedData.at(i);
+        let summaryTasks = groupedData.slice(0, 3).map(async (group) => {
             if (group !== undefined) {
                 let documents = group.texts.join("\n");
-                
-                relevantDocuments += `\n\nCASE ID: ${group?.case_id}\n\n`;
+      
+                let relevantDocuments = `\n\nCASE ID: ${group?.case_id}\n\n`;
                 relevantDocuments += documents;
+      
                 const { data, error } = await supabaseClient.from("cases").select("case_text").eq("case_id", group.case_id);
                 const summary = await getSummary(data?.at(0)?.case_text);
-                fullSummary += `\n\nCase ID: ${group?.case_id}\n\n`;
+      
+                let fullSummary = `\n\nCase ID: ${group?.case_id}\n\n`;
                 fullSummary += summary.text;
                 fullSummary += "\n\n";
+      
+                return { fullSummary, relevantDocuments };
             }
-        }
+        });
+        let summaries = await Promise.all(summaryTasks);
+        let fullSummary = summaries.map(sum => {
+            if(sum === undefined) return "";
+            else {
+                return sum.fullSummary;
+            }
+        }).join('');
+        let relevantDocuments = summaries.map(doc => {
+            if (doc === undefined) return "";
+            else {
+                return doc.relevantDocuments;
+            }
+        }).join('');
 
         const promptTemplate = new PromptTemplate({
             template: templates.qaTemplate,
