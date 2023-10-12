@@ -19,6 +19,7 @@ export default async function SignInPage() {
       });
     } catch (error) {
       console.error('Dummy login failed:', error);
+      redirect("/");
     }
   };
 
